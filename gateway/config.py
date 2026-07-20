@@ -1225,7 +1225,14 @@ def load_gateway_config() -> GatewayConfig:
             # session_reset / quick_commands / stt / model would be ignored by
             # the messaging gateway. Fail-open via the shared helper.
             from hermes_cli import managed_scope
+            from hermes_cli.config import _expand_env_vars
+
             yaml_cfg = managed_scope.apply_managed_overlay(yaml_cfg)
+            # Gateway configuration is parsed directly for its compact schema,
+            # rather than through hermes_cli.config.load_config(). Apply the
+            # shared ${VAR} expansion here so route secrets and other gateway
+            # settings resolve exactly as they do for the rest of Hermes.
+            yaml_cfg = _expand_env_vars(yaml_cfg)
 
             # Shared nested-fallback source: settings meant to be top-level
             # keys are also accepted when a user nests them under `gateway:`
